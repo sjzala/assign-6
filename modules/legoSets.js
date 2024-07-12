@@ -96,4 +96,9 @@ module.exports.getSetsByTheme = (theme) => {
   });
 };
 
-// Other functions remain unchanged...
+module.exports = {
+  initialize,
+  getAllSets,
+  getSetByNum,
+  getSetsByTheme,
+};
