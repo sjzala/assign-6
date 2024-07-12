@@ -1,7 +1,6 @@
 require('dotenv').config();
 const Sequelize = require('sequelize');
 
-// Initialize Sequelize with environment variables
 const sequelize = new Sequelize(
   process.env.PGDATABASE,
   process.env.PGUSER,
@@ -57,7 +56,7 @@ const Set = sequelize.define(
 // Create associations
 Set.belongsTo(Theme, { foreignKey: 'theme_id' });
 
-// Initialize the database
+// Initialize Sequelize
 module.exports.initialize = () => {
   return sequelize.sync();
 };
@@ -67,7 +66,7 @@ module.exports.getAllSets = () => {
   return Set.findAll({ include: [Theme] });
 };
 
-// Get a set by its number
+// Get a set by set number
 module.exports.getSetByNum = (set_num) => {
   return Set.findOne({ where: { set_num }, include: [Theme] }).then((set) => {
     if (set) {
@@ -96,9 +95,42 @@ module.exports.getSetsByTheme = (theme) => {
   });
 };
 
-module.exports = {
-  initialize,
-  getAllSets,
-  getSetByNum,
-  getSetsByTheme,
+// Get all themes
+module.exports.getAllThemes = () => {
+  return Theme.findAll();
+};
+
+// Add a new set
+module.exports.addSet = (setData) => {
+  return Set.create(setData).catch((err) => {
+    console.error('Error adding set:', err);
+    throw new Error(err.errors ? err.errors[0].message : 'Unknown error');
+  });
+};
+
+// Edit an existing set
+module.exports.editSet = (set_num, setData) => {
+  return Set.update(setData, { where: { set_num } }).then(([rowsUpdated]) => {
+    if (rowsUpdated === 0) {
+      throw new Error('Set not found');
+    }
+  }).catch((err) => {
+    console.error('Error editing set:', err);
+    throw new Error(err.errors ? err.errors[0].message : 'Unknown error');
+  });
+};
+
+// Delete a set by set_num
+module.exports.deleteSet = (set_num) => {
+    return Set.destroy({
+        where: { set_num }
+    }).then((deleted) => {
+        if (deleted) {
+            return Promise.resolve();
+        } else {
+            return Promise.reject("Set not found");
+        }
+    }).catch((err) => {
+        return Promise.reject(err.errors ? err.errors[0].message : "Unknown error");
+    });
 };
